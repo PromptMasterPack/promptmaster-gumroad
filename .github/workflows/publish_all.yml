@@ -3,7 +3,7 @@ name: Publish All PromptMaster Packs
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 10 * * *' # tous les jours à 10:00 UTC
+    - cron: '0 10 * * *'  # tous les jours à 10:00 UTC
 
 jobs:
   publish:
