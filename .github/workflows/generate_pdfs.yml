@@ -1,0 +1,51 @@
+name: Generate PromptMaster PDFs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'  # tous les jours à 08:00 UTC
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install openai fpdf stefanzweifel/git-auto-commit-action
+      - name: Generate PDFs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python - << 'EOF'
+          import os, json
+          from fpdf import FPDF
+          import openai
+
+          openai.api_key = os.getenv("OPENAI_API_KEY")
+          niches = json.load(open("niches.json", "r", encoding="utf-8"))
+          for entry in niches:
+              niche = entry["niche"]
+              pdf = FPDF()
+              pdf.add_page()
+              pdf.set_font("Arial", size=12)
+              resp = openai.ChatCompletion.create(
+                  model="gpt-4-turbo",
+                  messages=[{"role":"user","content":
+                      f"Donne-moi 50 prompts ChatGPT pour {niche}, sous forme numérotée."}]
+              )
+              prompts = resp.choices[0].message.content.split("\\n")
+              for line in prompts:
+                  pdf.multi_cell(0, 10, line)
+              filename = f"assets/PromptMaster_{niche.replace(' ', '_')}.pdf"
+              pdf.output(filename)
+          EOF
+      - name: Commit & Push PDFs
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto-generate PromptMaster PDFs"
