@@ -1,43 +1,24 @@
-import os
-import json
-from fpdf import FPDF
+name: Generate PromptMaster PDFs (local)
 
-# Modèles génériques (50 patterns)
-TEMPLATES = [
-    "Comment un {niche} peut-il augmenter son taux d'engagement ?",
-    "Donnez 5 idées de contenu pour un(e) {niche}.",
-    "Quel ton doit utiliser un(e) {niche} pour toucher son audience ?",
-    "Proposez un plan de publication hebdomadaire pour un(e) {niche}.",
-    "Comment un(e) {niche} peut-il optimiser son profil LinkedIn ?",
-    # … ajoutez jusqu’à 50 modèles différents …
-]
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
 
-def gen_prompts_for(niche):
-    prompts = []
-    for i, tpl in enumerate(TEMPLATES, 1):
-        prompts.append(f"{i}. {tpl.format(niche=niche)}")
-    return prompts
-
-def pdf_for_niche(niche):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    prompts = gen_prompts_for(niche)
-    for line in prompts:
-        pdf.multi_cell(0, 10, line)
-    return pdf
-
-def main():
-    # Charge la liste des niches
-    with open("niches.json", "r", encoding="utf-8") as f:
-        niches = json.load(f)
-    os.makedirs("assets", exist_ok=True)
-    for entry in niches:
-        niche = entry["niche"]
-        pdf = pdf_for_niche(niche)
-        filename = f"assets/PromptMaster_{niche.replace(' ', '_')}.pdf"
-        pdf.output(filename)
-        print(f"Generated {filename}")
-
-if __name__ == "__main__":
-    main()
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install fpdf
+      - name: Generate PDFs locally
+        run: python generate_pdfs.py
+      - name: Commit & Push PDFs
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto-generate PromptMaster PDFs (local)"
