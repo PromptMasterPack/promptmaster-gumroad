@@ -1,0 +1,22 @@
+name: Publish All PromptMaster Packs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 10 * * *' # tous les jours à 10:00 UTC
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install requests
+      - name: Publish all niches to Gumroad
+        env:
+          GUMROAD_TOKEN: ${{ secrets.GUMROAD_TOKEN }}
+        run: python publish_all.py
