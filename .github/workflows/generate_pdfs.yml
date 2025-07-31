@@ -34,7 +34,7 @@ jobs:
               pdf = FPDF()
               pdf.add_page()
               pdf.set_font("Arial", size=12)
-              resp = openai.ChatCompletion.create(
+              resp = openai.chat.completions.create(
                   model="gpt-4-turbo",
                   messages=[{"role":"user","content":
                       f"Donne-moi 50 prompts ChatGPT pour {niche}, sous forme numérotée."}]
