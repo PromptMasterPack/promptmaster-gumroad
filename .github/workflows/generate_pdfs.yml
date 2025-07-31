@@ -3,7 +3,7 @@ name: Generate PromptMaster PDFs
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 8 * * *'  # tous les jours à 08:00 UTC
+    - cron: '0 8 * * *'
 
 jobs:
   generate:
@@ -34,10 +34,11 @@ jobs:
               pdf = FPDF()
               pdf.add_page()
               pdf.set_font("Arial", size=12)
-resp = openai.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[{"role":"user","content": ... }]
-)
+              resp = openai.chat.completions.create(
+                  model="gpt-3.5-turbo",
+                  messages=[{"role":"user","content":
+                      f"Donne-moi 50 prompts ChatGPT pour {niche}, sous forme numérotée."}]
+              )
               prompts = resp.choices[0].message.content.split("\\n")
               for line in prompts:
                   pdf.multi_cell(0, 10, line)
